@@ -1,0 +1,41 @@
+name: CI
+on: [push, pull_request]
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install libfdk-aac
+        run: |
+          sudo apt install libfdk-aac-dev
+      - name: Checkout sources
+        uses: actions/checkout@v3
+      - name: Build
+        run: |
+          autoreconf -fiv
+          ./configure
+          make
+
+  mingw-cross:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install cross compiler
+        run: |
+          sudo apt-get install g++-mingw-w64-x86-64
+      - name: Checkout libfdk-aac
+        uses: actions/checkout@v3
+        with:
+          repository: mstorsjo/fdk-aac
+      - name: Build libfdk-aac
+        run: |
+          ./autogen.sh
+          ./configure --host=x86_64-w64-mingw32
+          make
+          sudo make install
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Build
+        run: |
+          autoreconf -fiv
+          ./configure --host=x86_64-w64-mingw32
+          make
